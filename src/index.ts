@@ -43,7 +43,7 @@ class ExampleMentraOSApp extends AppServer {
     this.userSessionsMap.set(userId, session);
 
     // Show welcome message
-    session.layouts.showTextWall("Example App loaded!");
+    session.layouts.showTextWall("Example App loaded! ai not replacing us yet");
 
     /**
      * Handles transcription display based on settings
