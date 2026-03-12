@@ -2,6 +2,7 @@ import { ToolCall, AppServer, AppSession } from '@mentra/sdk';
 import path from 'path';
 import { setupExpressRoutes } from './webview';
 import { handleToolCall } from './tools';
+import { clearScans } from './scan-history';
 
 const PACKAGE_NAME = process.env.PACKAGE_NAME || 'com.evri.innovation.barcodescanner';
 const MENTRAOS_API_KEY = process.env.MENTRAOS_API_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFsYXJpY2Jha2VyQGdtYWlsLmNvbSIsInR5cGUiOiJjbGkiLCJrZXlJZCI6IjQxYmIwNmFiLWFhNDUtNDhhNC1iODkxLWU1MjFhN2YzZjk2MyIsIm5hbWUiOiJ3b3JrIG1hY2Jvb2sgcHJvIiwiaWF0IjoxNzczMjI4NDU2fQ.ix9fMRZGS2uVG-EJyCS5fo1Rh7m-VsnKz562M0DOsiI';
@@ -79,7 +80,10 @@ class ExampleMentraOSApp extends AppServer {
     );
 
     // automatically remove the session when the session ends
-    this.addCleanupHandler(() => this.userSessionsMap.delete(userId));
+    this.addCleanupHandler(() => {
+      clearScans(userId);
+      this.userSessionsMap.delete(userId);
+    });
   }
 }
 
