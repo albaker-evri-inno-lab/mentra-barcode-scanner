@@ -36,10 +36,19 @@ function makeSession(overrides: {
         return defaultValue;
       }),
     },
-    requestPhoto: mock(() => {
-      if (requestPhotoResult instanceof Error) return Promise.reject(requestPhotoResult);
-      return Promise.resolve(requestPhotoResult);
-    }),
+    camera: {
+      requestPhoto: mock(() => {
+        if (requestPhotoResult instanceof Error) return Promise.reject(requestPhotoResult);
+        return Promise.resolve({
+          buffer: requestPhotoResult,
+          mimeType: 'image/jpeg',
+          filename: 'photo.jpg',
+          requestId: 'req-1',
+          size: (requestPhotoResult as Buffer).length,
+          timestamp: new Date(),
+        });
+      }),
+    },
     layouts: {
       showTextWall: mock(() => {}),
     },
@@ -62,7 +71,7 @@ describe('scan_barcode tool handler', () => {
     const session = makeSession({ enabled: false });
     const result = await handleToolCall(makeToolCall('scan_barcode'), 'user-1', session);
     expect(result).toBe('Barcode scanning is disabled');
-    expect(session.requestPhoto).not.toHaveBeenCalled();
+    expect(session.camera.requestPhoto).not.toHaveBeenCalled();
   });
 
   it('returns error and displays message when camera capture fails', async () => {
@@ -86,7 +95,7 @@ describe('scan_barcode tool handler', () => {
     const session = makeSession();
     const result = await handleToolCall(makeToolCall('scan_barcode'), 'user-1', session);
 
-    expect(session.requestPhoto).toHaveBeenCalled();
+    expect(session.camera.requestPhoto).toHaveBeenCalled();
     expect(mockDecodeBarcode).toHaveBeenCalled();
     expect(mockAddScan).toHaveBeenCalledWith('user-1', expect.objectContaining({
       text: 'ABC-123',

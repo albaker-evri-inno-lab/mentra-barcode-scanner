@@ -44,7 +44,8 @@ async function handleScanBarcode(userId: string, session: AppSession | undefined
 
   let imageBuffer: Buffer;
   try {
-    imageBuffer = await session.requestPhoto();
+    const photoData = await session.camera.requestPhoto();
+    imageBuffer = photoData.buffer;
   } catch (error) {
     const msg = "Scan failed: could not capture image";
     session.layouts.showTextWall(msg);

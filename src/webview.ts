@@ -1,6 +1,7 @@
 import { AuthenticatedRequest, AppServer } from '@mentra/sdk';
 import express from 'express';
 import path from 'path';
+import { getScans } from './scan-history';
 
 /**
  * Sets up all Express routes and middleware for the server
@@ -17,14 +18,22 @@ export function setupExpressRoutes(server: AppServer): void {
 
   // Register a route for handling webview requests
   app.get('/webview', (req: AuthenticatedRequest, res) => {
-    if (req.authUserId) {
-      // Render the webview template
+    // Fall back to query param for local browser testing (remove before production)
+    const userId = req.authUserId || (req.query.userId as string);
+
+    console.log('webview authUserId:', req.authUserId);
+    console.log('webview resolved userId:', userId);
+    console.log('webview headers:', JSON.stringify(req.headers, null, 2));
+
+    if (userId) {
       res.render('webview', {
-        userId: req.authUserId,
+        userId,
+        scans: getScans(userId),
       });
     } else {
       res.render('webview', {
         userId: undefined,
+        scans: [],
       });
     }
   });

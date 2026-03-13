@@ -18,7 +18,7 @@ describe('Feature: barcode-scanning, Property 2: Scan history round-trip', () =>
   const scanEntryArb = fc.record({
     text: fc.string({ minLength: 1 }),
     format: fc.string({ minLength: 1 }),
-    timestamp: fc.date(),
+    timestamp: fc.date({ noInvalidDate: true }),
   });
 
   beforeEach(() => {

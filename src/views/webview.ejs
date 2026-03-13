@@ -18,6 +18,31 @@
                 <p>Not logged in</p>
             <% } %>
         </div>
+        <div class="scan-history">
+            <h2>Scan History</h2>
+            <% if (scans && scans.length > 0) { %>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Barcode Text</th>
+                            <th>Format</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% scans.forEach(function(scan) { %>
+                            <tr>
+                                <td><%= scan.text %></td>
+                                <td><%= scan.format %></td>
+                                <td><%= new Date(scan.timestamp).toLocaleString() %></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            <% } else { %>
+                <p>No scans available.</p>
+            <% } %>
+        </div>
     </div>
 </body>
 </html>
