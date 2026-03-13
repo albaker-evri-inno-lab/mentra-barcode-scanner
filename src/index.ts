@@ -5,7 +5,7 @@ import { handleToolCall } from './tools';
 import { clearScans } from './scan-history';
 
 const PACKAGE_NAME = process.env.PACKAGE_NAME || 'com.evri.innovation.barcodescanner';
-const MENTRAOS_API_KEY = process.env.MENTRAOS_API_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFsYXJpY2Jha2VyQGdtYWlsLmNvbSIsInR5cGUiOiJjbGkiLCJrZXlJZCI6IjQxYmIwNmFiLWFhNDUtNDhhNC1iODkxLWU1MjFhN2YzZjk2MyIsIm5hbWUiOiJ3b3JrIG1hY2Jvb2sgcHJvIiwiaWF0IjoxNzczMjI4NDU2fQ.ix9fMRZGS2uVG-EJyCS5fo1Rh7m-VsnKz562M0DOsiI';
+const MENTRAOS_API_KEY = process.env.MENTRAOS_API_KEY || '1fe8b070005f74dee0ed1373df732b6c20bd3866e463fce2dcf5821a36269d22';
 const PORT = parseInt(process.env.PORT || '3000');
 
 class ExampleMentraOSApp extends AppServer {

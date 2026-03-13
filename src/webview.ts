@@ -17,11 +17,12 @@ export function setupExpressRoutes(server: AppServer): void {
   app.set('views', path.join(__dirname, 'views'));
 
   // Register a route for handling webview requests
-  app.get('/webview', (req: AuthenticatedRequest, res) => {
+  app.get('/webview', (req, res) => {
+    const authReq = req as AuthenticatedRequest;
     // Fall back to query param for local browser testing (remove before production)
-    const userId = req.authUserId || (req.query.userId as string);
+    const userId = authReq.authUserId || (req.query.userId as string);
 
-    console.log('webview authUserId:', req.authUserId);
+    console.log('webview authUserId:', authReq.authUserId);
     console.log('webview resolved userId:', userId);
     console.log('webview headers:', JSON.stringify(req.headers, null, 2));
 
