@@ -90,4 +90,13 @@ class ExampleMentraOSApp extends AppServer {
 // Start the server
 const app = new ExampleMentraOSApp();
 
-app.start().catch(console.error);
+console.log(`📦 Package: ${PACKAGE_NAME}`);
+console.log(`🔑 API key set: ${!!MENTRAOS_API_KEY}`);
+console.log(`🚪 Port: ${PORT}`);
+
+app.start()
+  .then(() => console.log('✅ Connected to Mentra cloud successfully'))
+  .catch((err) => {
+    console.error('❌ Failed to connect to Mentra cloud:', err);
+    process.exit(1);
+  });
