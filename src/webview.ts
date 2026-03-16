@@ -1,17 +1,19 @@
-import { AuthenticatedRequest, AppServer } from '@mentra/sdk';
+import { AuthenticatedRequest, AppServer, AppSession } from '@mentra/sdk';
 import express from 'express';
 import path from 'path';
-import { getScans } from './scan-history';
+import { getScans, addScan } from './scan-history';
+import { handleToolCall } from './tools';
 
 /**
  * Sets up all Express routes and middleware for the server
  * @param server The server instance
  */
-export function setupExpressRoutes(server: AppServer): void {
-  // Get the Express app instance
+export function setupExpressRoutes(
+  server: AppServer,
+  getSession: (userId: string) => AppSession | undefined
+): void {
   const app = server.getExpressApp();
 
-  // Set up EJS as the view engine
   app.set('view engine', 'ejs');
   app.engine('ejs', require('ejs').__express);
   app.set('views', path.join(__dirname, 'views'));
@@ -37,5 +39,30 @@ export function setupExpressRoutes(server: AppServer): void {
         scans: [],
       });
     }
+  });
+
+  // Scan trigger endpoint — called by the webview button
+  app.post('/api/scan', async (req, res) => {
+    const authReq = req as AuthenticatedRequest;
+    const userId = authReq.authUserId || (req.query.userId as string);
+
+    if (!userId) {
+      res.status(401).json({ error: 'Not authenticated' });
+      return;
+    }
+
+    const session = getSession(userId);
+    if (!session) {
+      res.status(404).json({ error: 'No active session — make sure the app is running on your glasses' });
+      return;
+    }
+
+    const result = await handleToolCall(
+      { toolId: 'scan_barcode', userId, timestamp: new Date().toISOString(), toolParameters: {} } as any,
+      userId,
+      session
+    );
+
+    res.json({ result, scans: getScans(userId) });
   });
 }

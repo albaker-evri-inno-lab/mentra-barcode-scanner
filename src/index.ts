@@ -18,7 +18,7 @@ class ExampleMentraOSApp extends AppServer {
     });
 
     // Set up Express routes
-    setupExpressRoutes(this);
+    setupExpressRoutes(this, (userId) => this.userSessionsMap.get(userId));
   }
 
   /** Map to store active user sessions */
