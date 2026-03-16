@@ -40,51 +40,44 @@ class ExampleMentraOSApp extends AppServer {
    * @param sessionId - Unique session identifier
    * @param userId - User identifier
    */
-  protected async onSession(session: AppSession, sessionId: string, userId: string): Promise<void> {
-    this.userSessionsMap.set(userId, session);
+	protected async onSession(session: AppSession, sessionId: string, userId: string): Promise<void> {
+	  console.log(`🟢 Session started - userId: ${userId}, sessionId: ${sessionId}`);
+	  try {
+	    this.userSessionsMap.set(userId, session);
 
-    // Show welcome message
-    session.layouts.showTextWall("Example App loaded! ai not replacing us yet");
+	    console.log('📺 Showing welcome message...');
+	    session.layouts.showTextWall("Example App loaded! ai not replacing us yet");
+	    console.log('✅ Welcome message shown');
 
-    /**
-     * Handles transcription display based on settings
-     * @param text - The transcription text to display
-     */
-    const displayTranscription = (text: string): void => {
-      const showLiveTranscription = session.settings.get<boolean>('show_live_transcription', true);
-      if (showLiveTranscription) {
-        console.log("Transcript received:", text);
-        session.layouts.showTextWall("You said: " + text);
-      }
-    };
+	    const displayTranscription = (text: string): void => {
+	      const showLiveTranscription = session.settings.get<boolean>('show_live_transcription', true);
+	      if (showLiveTranscription) {
+		console.log("Transcript received:", text);
+		session.layouts.showTextWall("You said: " + text);
+	      }
+	    };
 
-    // Listen for transcriptions
-    session.events.onTranscription((data) => {
-      if (data.isFinal) {
-        // Handle final transcription text
-        displayTranscription(data.text);
-      }
-    });
+	    session.events.onTranscription((data) => {
+	      if (data.isFinal) {
+		displayTranscription(data.text);
+	      }
+	    });
 
-    // Listen for setting changes to update transcription display behavior
-    session.settings.onValueChange(
-      'show_live_transcription',
-      (newValue: boolean, oldValue: boolean) => {
-        console.log(`Live transcription setting changed from ${oldValue} to ${newValue}`);
-        if (newValue) {
-          console.log("Live transcription display enabled");
-        } else {
-          console.log("Live transcription display disabled");
-        }
-      }
-    );
+	    session.settings.onValueChange('show_live_transcription', (newValue: boolean, oldValue: boolean) => {
+	      console.log(`Live transcription setting changed from ${oldValue} to ${newValue}`);
+	    });
 
-    // automatically remove the session when the session ends
-    this.addCleanupHandler(() => {
-      clearScans(userId);
-      this.userSessionsMap.delete(userId);
-    });
-  }
+	    this.addCleanupHandler(() => {
+	      console.log(`🔴 Session ended - userId: ${userId}`);
+	      clearScans(userId);
+	      this.userSessionsMap.delete(userId);
+	    });
+
+	    console.log('✅ onSession setup complete');
+	  } catch (err) {
+	    console.error('❌ Error in onSession:', err);
+	  }
+	}
 }
 
 // Start the server
