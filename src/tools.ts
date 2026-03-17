@@ -83,5 +83,10 @@ async function handleScanBarcode(userId: string, session: AppSession | undefined
 
   const resultText = results.map(r => `${r.format}: ${r.text}`).join('\n');
   session.layouts.showTextWall(resultText);
+
+  // Read the result out through the glasses speaker
+  for (const result of results) {
+    await session.audio.speak(`Barcode detected: ${result.text}`);
+  }
   return resultText;
 }
