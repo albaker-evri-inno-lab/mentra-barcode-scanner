@@ -1,4 +1,3 @@
-//import { readBarcodes, type ReaderOptions } from 'zxing-wasm/reader';
 import { readBarcodesFromImageData, prepareZXingModule, type ReaderOptions } from 'zxing-wasm/reader';
 import sharp from 'sharp';
 
@@ -10,10 +9,12 @@ const wasmBuffer = readFileSync(
   resolve(process.cwd(), 'node_modules/zxing-wasm/dist/reader/zxing_reader.wasm')
 );
 await prepareZXingModule({
-  wasmBinary: wasmBuffer.buffer.slice(
-    wasmBuffer.byteOffset,
-    wasmBuffer.byteOffset + wasmBuffer.byteLength
-  ) as ArrayBuffer,
+  overrides: {
+    wasmBinary: wasmBuffer.buffer.slice(
+      wasmBuffer.byteOffset,
+      wasmBuffer.byteOffset + wasmBuffer.byteLength
+    ) as ArrayBuffer,
+  },
 });
 
 export interface ScanResult {
@@ -34,6 +35,8 @@ const readerOptions: ReaderOptions = {
  */
 export async function decodeBarcode(imageBuffer: Buffer): Promise<ScanResult[]> {
   const { data, info } = await sharp(imageBuffer)
+    .normalise()        // auto-stretch contrast
+    .sharpen()          // enhance edges
     .ensureAlpha()
     .raw()
     .toBuffer({ resolveWithObject: true });
@@ -42,7 +45,7 @@ export async function decodeBarcode(imageBuffer: Buffer): Promise<ScanResult[]> 
     data: new Uint8ClampedArray(data),
     width: info.width,
     height: info.height,
-    //colorSpace: 'srgb',
+    colorSpace: 'srgb',
   };
 
   const results = await readBarcodesFromImageData(imageData, readerOptions);
