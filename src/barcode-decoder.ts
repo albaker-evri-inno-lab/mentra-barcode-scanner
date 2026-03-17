@@ -19,17 +19,20 @@ export interface ScanResult {
 }
 
 const readerOptions: ReaderOptions = {
-	formats: ['QRCode', 'Code128', 'Code39', 'EAN-13', 'EAN-8', 'UPCA'],
-	tryHarder: true,
-	tryRotate: true,
-	tryInvert: true,
+  formats: ['QRCode', 'Code128', 'Code39', 'EAN-13', 'EAN-8', 'UPCA'],
+  tryHarder: true,
+  tryRotate: true,
+  tryInvert: true,
 };
 
 async function tryDecode(pipeline: sharp.Sharp): Promise<ScanResult[]> {
+  // Must output RGBA (4 channels) — never use greyscale() before this
   const { data, info } = await pipeline
     .ensureAlpha()
     .raw()
     .toBuffer({ resolveWithObject: true });
+
+  console.log(`  → ${info.width}x${info.height} ${info.channels}ch`);
 
   const results = await readBarcodesFromImageData(
     { data: new Uint8ClampedArray(data), width: info.width, height: info.height },
@@ -41,43 +44,23 @@ async function tryDecode(pipeline: sharp.Sharp): Promise<ScanResult[]> {
 export async function decodeBarcode(imageBuffer: Buffer): Promise<ScanResult[]> {
   const metadata = await sharp(imageBuffer).metadata();
   const w = metadata.width ?? 1920;
-  console.log(`🔍 Image received: ${w}x${metadata.height}, ${imageBuffer.length} bytes`);
+  console.log(`🔍 Image: ${w}x${metadata.height}, ${imageBuffer.length} bytes`);
 
-  // Attempt 1: greyscale + contrast stretch + sharpen at full resolution
-  let results = await tryDecode(
-    sharp(imageBuffer).greyscale().normalise().sharpen()
-  );
-  if (results.length > 0) {
-    console.log('✅ Barcode found on attempt 1 (full res, preprocessed)');
-    return results;
-  }
+  // Attempt 1: normalise + sharpen, full resolution
+  let results = await tryDecode(sharp(imageBuffer).normalise().sharpen());
+  if (results.length > 0) { console.log('✅ Found on attempt 1'); return results; }
 
-  // Attempt 2: 50% size — helps when barcode is small in the frame
-  results = await tryDecode(
-    sharp(imageBuffer).resize({ width: Math.round(w / 2) }).greyscale().normalise()
-  );
-  if (results.length > 0) {
-    console.log('✅ Barcode found on attempt 2 (50% resize)');
-    return results;
-  }
+  // Attempt 2: 50% size
+  results = await tryDecode(sharp(imageBuffer).resize({ width: Math.round(w / 2) }).normalise());
+  if (results.length > 0) { console.log('✅ Found on attempt 2 (50%)'); return results; }
 
   // Attempt 3: 25% size
-  results = await tryDecode(
-    sharp(imageBuffer).resize({ width: Math.round(w / 4) }).greyscale().normalise()
-  );
-  if (results.length > 0) {
-    console.log('✅ Barcode found on attempt 3 (25% resize)');
-    return results;
-  }
+  results = await tryDecode(sharp(imageBuffer).resize({ width: Math.round(w / 4) }).normalise());
+  if (results.length > 0) { console.log('✅ Found on attempt 3 (25%)'); return results; }
 
-  // Attempt 4: high contrast threshold (helps with poor lighting)
-  results = await tryDecode(
-    sharp(imageBuffer).greyscale().linear(2.0, -(128 * 2.0) + 128).normalise()
-  );
-  if (results.length > 0) {
-    console.log('✅ Barcode found on attempt 4 (high contrast)');
-    return results;
-  }
+  // Attempt 4: boosted contrast
+  results = await tryDecode(sharp(imageBuffer).linear(2.0, -(128 * 2.0) + 128).normalise());
+  if (results.length > 0) { console.log('✅ Found on attempt 4 (contrast boost)'); return results; }
 
   console.log('❌ No barcode found after 4 attempts');
   return [];
