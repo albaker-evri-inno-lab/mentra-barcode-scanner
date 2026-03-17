@@ -19,8 +19,10 @@ export interface ScanResult {
 }
 
 const readerOptions: ReaderOptions = {
-  formats: ['QRCode', 'Code128', 'Code39', 'EAN-13', 'EAN-8', 'UPCA'],
-  tryHarder: true,
+	formats: ['QRCode', 'Code128', 'Code39', 'EAN-13', 'EAN-8', 'UPCA'],
+	tryHarder: true,
+	tryRotate: true,
+	tryInvert: true,
 };
 
 async function tryDecode(pipeline: sharp.Sharp): Promise<ScanResult[]> {
