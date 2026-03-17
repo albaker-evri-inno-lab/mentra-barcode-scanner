@@ -2,7 +2,7 @@ import { AuthenticatedRequest, AppServer, AppSession } from '@mentra/sdk';
 import express from 'express';
 import path from 'path';
 import { getScans, addScan } from './scan-history';
-import { handleToolCall } from './tools';
+import { handleToolCall, getLastCapturedImage } from './tools';
 
 /**
  * Sets up all Express routes and middleware for the server
@@ -65,4 +65,15 @@ export function setupExpressRoutes(
 
     res.json({ result, scans: getScans(userId) });
   });
+
+	app.get('/debug/last-image', (req, res) => {
+		const image = getLastCapturedImage();
+		if (!image) {
+		res.status(404).send('No image captured yet — trigger a scan first');
+		return;
+		}
+		res.set('Content-Type', 'image/jpeg');
+		res.send(image);
+	});
+
 }

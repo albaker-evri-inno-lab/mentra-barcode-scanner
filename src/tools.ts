@@ -2,6 +2,12 @@ import { ToolCall, AppSession } from '@mentra/sdk';
 import { decodeBarcode } from './barcode-decoder';
 import { addScan } from './scan-history';
 
+let lastCapturedImage: Buffer | null = null;
+
+export function getLastCapturedImage(): Buffer | null {
+  return lastCapturedImage;
+}
+
 /**
  * Handle a tool call
  * @param toolCall - The tool call from the server
@@ -44,13 +50,14 @@ async function handleScanBarcode(userId: string, session: AppSession | undefined
 
   let imageBuffer: Buffer;
   try {
-    const photoData = await session.camera.requestPhoto();
-    imageBuffer = photoData.buffer;
+	const photoData = await session.camera.requestPhoto();
+	imageBuffer = photoData.buffer;
+	lastCapturedImage = imageBuffer;
   } catch (error) {
-    const msg = "Scan failed: could not capture image";
-    session.layouts.showTextWall(msg);
-    console.error("Camera capture error:", error);
-    return msg;
+	const msg = "Scan failed: could not capture image";
+	session.layouts.showTextWall(msg);
+	console.error("Camera capture error:", error);
+	return msg;
   }
 
   let results;
