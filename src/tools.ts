@@ -91,6 +91,7 @@ async function handleScanBarcode(userId: string, session: AppSession | undefined
     const response = await axios.get(
       `${SERVICE_URL}?barcode=${result.text}`
     );
+    console.log(response.data);
     const clientName = response.data?.clientName;
     const customerName = response.data?.customerName;
     const addLine1 = response.data?.address?.line1;
