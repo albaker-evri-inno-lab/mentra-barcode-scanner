@@ -1,7 +1,9 @@
 import { ToolCall, AppSession } from '@mentra/sdk';
 import { decodeBarcode } from './barcode-decoder';
 import { addScan } from './scan-history';
+import axios from 'axios';
 
+const SERVICE_URL = process.env.SERVICE_URL;
 let lastCapturedImage: Buffer | null = null;
 
 export function getLastCapturedImage(): Buffer | null {
@@ -84,9 +86,25 @@ async function handleScanBarcode(userId: string, session: AppSession | undefined
   const resultText = results.map(r => `${r.format}: ${r.text}`).join('\n');
   session.layouts.showTextWall(resultText);
 
-  // Read the result out through the glasses speaker
   for (const result of results) {
+    try {
+    const response = await axios.get(
+      `${SERVICE_URL}?barcode=${result.text}`
+    );
+    const clientName = response.data?.clientName;
+    const customerName = response.data?.customerName;
+    const addLine1 = response.data?.address?.line1;
+    const speakText = clientName
+      ? `Hello ${customerName}, your ${clientName} parcel is coming to ${addLine1}`
+      : `Barcode ${result.text}, no parcel information found`;
+
+    session.layouts.showTextWall(speakText);
+    await session.audio.speak(speakText);
+  } catch (error) {
+    console.error('API lookup failed:', error);
     await session.audio.speak(`Barcode detected: ${result.text}`);
   }
-  return resultText;
+  
+  }
+return resultText;
 }

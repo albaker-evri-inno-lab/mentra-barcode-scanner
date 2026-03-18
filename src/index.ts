@@ -46,7 +46,7 @@ class ExampleMentraOSApp extends AppServer {
 	    this.userSessionsMap.set(userId, session);
 
 	    console.log('📺 Showing welcome message...');
-	    session.layouts.showTextWall("Example App loaded! ai not replacing us yet");
+	    session.layouts.showTextWall("Barcode App loaded");
 	    console.log('✅ Welcome message shown');
 
 	    const displayTranscription = (text: string): void => {
